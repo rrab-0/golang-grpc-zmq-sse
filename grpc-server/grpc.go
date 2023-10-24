@@ -24,6 +24,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 
 	"grpc-zmq-sse/db"
 	pb "grpc-zmq-sse/generated-proto"
@@ -33,7 +35,8 @@ import (
 )
 
 var (
-	port = flag.Int("port", 50051, "The server port")
+	portEnv, err = strconv.Atoi(os.Getenv("GRPC_PORT"))
+	port         = flag.Int("port", portEnv, "The server port")
 )
 
 // server is used to implement helloworld.GreeterServer.
@@ -44,13 +47,14 @@ type server struct {
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	log.Printf("GRPC Server received: %v", in.GetName())
-	zmq_local.GlobalPublisher.Send(in.GetName(), 0)
+	zmq_local.GlobalPublisher.Send("10001 "+in.GetName(), 0)
 	log.Println("ZMQ PUB Sent: " + in.GetName())
 
 	err := db.GlobalConnection.Create(&db.Dump{Message: in.GetName()}).Error
 	if err != nil {
 		fmt.Printf("Error: %s", err)
 	}
+	log.Println("PostgreSQL at grpc-server received: " + in.GetName())
 
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }

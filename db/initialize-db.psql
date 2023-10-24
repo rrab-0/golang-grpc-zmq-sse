@@ -1,7 +1,7 @@
 -- CREATE DATABASE "golang-grpc-zmq-sse-be-1";
 -- DROP DATABASE "golang-grpc-zmq-sse-be-1";
 
--- CREATE TABLE dump (
+-- CREATE TABLE dumps (
 --     id SERIAL PRIMARY KEY,
 --     -- identifier TEXT NOT NULL,
 --     -- name TEXT NOT NULL,
@@ -10,5 +10,5 @@
 --     -- updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 -- );
 
-SELECT * FROM dump;
+-- SELECT * FROM dump;
 -- DROP TABLE dump;

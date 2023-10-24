@@ -1,9 +1,9 @@
 package sse_server
 
 import (
-	"fmt"
 	"grpc-zmq-sse/db"
 	zmq_local "grpc-zmq-sse/zmq-local"
+	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -21,34 +21,43 @@ func Start() {
 		c.Header("Content-Type", "text/event-stream")
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Connection", "keep-alive")
+		c.Header("Access-Control-Allow-Origin", "*")
 
 		msgCh := make(chan string)
 		go func() {
 			for {
+				// TODO, fix bug here:
+				// sub.Recv is blocking therefore can't "connect" to sse before "msg" var is populated by pub.Send
 				msg, err := zmq_local.GlobalSubscriber.Recv(0)
 				if err != nil {
-					fmt.Printf("Error: %s", err)
+					log.Printf("ZMQ SUB Error: %s\n", err)
 					continue
 				}
-				fmt.Println("ZMQ SUB received: " + msg)
+				log.Println("ZMQ SUB received: " + msg)
 
 				err = db.GlobalConnection.Create(&db.Dump{Message: msg}).Error
 				if err != nil {
-					fmt.Printf("Error: %s", err)
+					log.Printf("Error: %s\n", err)
 					continue
 				}
+				log.Println("PostgreSQL at sse-handler received: " + msg)
 
 				msgCh <- msg
 			}
 		}()
 
 		for {
-			msg := <-msgCh
-			c.SSEvent("message", msg)
-			fmt.Println("SSE Sent: " + msg)
-			c.Writer.Flush()
+			select {
+			case msgFromSubZMQ := <-msgCh:
+				c.SSEvent("message", msgFromSubZMQ)
+				c.Writer.Flush()
+				log.Println("SSE Sent: " + msgFromSubZMQ)
+			case <-c.Writer.CloseNotify():
+				log.Println("client disconnected")
+				return
+			}
 		}
 	})
 
-	r.Run(":" + os.Getenv("SSE_PORT")) // listen and serve on 0.0.0.0:8080
+	r.Run(":" + os.Getenv("SSE_SERVER_PORT")) // listen and serve on 0.0.0.0:8080
 }

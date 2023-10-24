@@ -1,46 +1,31 @@
 package zmq_local
 
 import (
+	"log"
+
 	zmq "github.com/pebbe/zmq4"
 
-	"fmt"
 	"os"
 )
 
 var GlobalSubscriber *zmq.Socket
 
-func Subscriber() {
-	subscriber, _ := zmq.NewSocket(zmq.SUB)
-	defer subscriber.Close()
+func Subscriber() *zmq.Socket {
+	subscriber, err := zmq.NewSocket(zmq.SUB)
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+	}
 	subscriber.Connect("tcp://localhost:" + os.Getenv("ZMQ_SUB_PORT"))
 	GlobalSubscriber = subscriber
 
-	fmt.Println("ZMQ Subscriber is up at :" + os.Getenv("ZMQ_SUB_PORT"))
+	log.Println("ZMQ Subscriber is up at :" + os.Getenv("ZMQ_SUB_PORT"))
 
-	// Subscribe to zipcode, default is NYC, 10001
-	filter := "10001 "
+	// Subscribe to topic 10001
+	filter := "10001 " // zipcode, default is NYC, 10001
 	if len(os.Args) > 1 {
 		filter = os.Args[1] + " "
 	}
 	subscriber.SetSubscribe(filter)
 
-	// for {
-	// 	msg, err := subscriber.Recv(0)
-	// 	if err != nil {
-	// 		fmt.Printf("Error: %s", err)
-	// 	}
-
-	// 	if msgs := strings.Fields(msg); len(msgs) > 1 {
-	// 		fmt.Printf("data from Publisher: " + msgs[1] + "\n")
-	// 	}
-	// }
+	return subscriber
 }
-
-// func GetMessage() (string, error) {
-// 	msg, err := GlobalSubscriber.Recv(0)
-// 	if err != nil {
-// 		return msg, err
-// 	}
-
-// 	return msg, nil
-// }
