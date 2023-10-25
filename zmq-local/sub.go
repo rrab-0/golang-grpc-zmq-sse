@@ -16,15 +16,26 @@ func Subscriber() *zmq.Socket {
 		log.Printf("Error: %s\n", err)
 	}
 
-	subscriber.Connect("tcp://localhost:" + os.Getenv("ZMQ_SUB_PORT"))
+	mockSubErr2 := subscriber.Connect("tcp://" + os.Getenv("MOCK_IP2") + ":" + os.Getenv("ZMQ_SUB_PORT"))
+	if mockSubErr2 != nil {
+		log.Printf("mockSubErr2 Error: %s\n", mockSubErr2)
+	}
+
+	mockSubErr3 := subscriber.Connect("tcp://" + os.Getenv("MOCK_IP3") + ":" + os.Getenv("ZMQ_SUB_PORT"))
+	if mockSubErr3 != nil {
+		log.Printf("mockSubErr3 Error: %s\n", mockSubErr3)
+	}
+
 	GlobalSubscriber = subscriber
 	log.Println("ZMQ Subscriber is up at :" + os.Getenv("ZMQ_SUB_PORT"))
 
-	// Subscribe to topic 10001
-	filter := "10001 "    // zipcode, default is NYC, 10001
-	if len(os.Args) > 1 { // can set topic with cli args
-		filter = os.Args[1] + " "
-	}
-	subscriber.SetSubscribe(filter)
+	// // Subscribe to topic 10001
+	// filter := "10001 "    // zipcode, default is NYC, 10001
+	// if len(os.Args) > 1 { // can set topic with cli args
+	// 	filter = os.Args[1] + " "
+	// }
+	// subscriber.SetSubscribe("hello2")
+	// subscriber.SetSubscribe("hello3")
+
 	return subscriber
 }

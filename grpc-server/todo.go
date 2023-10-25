@@ -62,6 +62,7 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 
 	fmt.Println("=======================================")
 	fmt.Println(" Delete Todo")
+	fmt.Println(" ID: " + todoId)
 	fmt.Println("=======================================")
 
 	return &pbTodo.DeleteTodoResponse{Id: todoId}, nil
@@ -72,6 +73,7 @@ func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoReque
 
 	fmt.Println("=======================================")
 	fmt.Println(" Update Todo")
+	fmt.Println(" ID: " + todoId)
 	fmt.Println("=======================================")
 
 	return &pbTodo.UpdateTodoResponse{Id: todoId}, nil
