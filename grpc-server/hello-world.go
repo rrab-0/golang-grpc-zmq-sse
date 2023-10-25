@@ -16,11 +16,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	portEnv, _ = strconv.Atoi(os.Getenv("GRPC_PORT"))
-	port       = flag.Int("port", portEnv, "The server port")
-)
-
 // server is used to implement helloworld.GreeterServer.
 type server struct {
 	pb.UnimplementedGreeterServer
@@ -42,9 +37,13 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 }
 
 func Start() {
-	flag.Parse()
+	// flag.Parse()
+	var (
+		portEnvHello, _ = strconv.Atoi(os.Getenv("GRPC_PORT"))
+		portHello       = flag.Int("portHello", portEnvHello, "The server port")
+	)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *portHello))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

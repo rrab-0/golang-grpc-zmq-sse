@@ -51,3 +51,14 @@ func Connect() {
 
 	log.Println("SUCCESS: PostgreSQL migration completed (Some tables won't be created if they already exist).")
 }
+
+type Todo struct {
+	ID        uuid.UUID      `json:"id" uri:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Completed   bool   `json:"completed"`
+}

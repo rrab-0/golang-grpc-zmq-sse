@@ -26,9 +26,9 @@ func main() {
 		grpc_server.Start()
 	}()
 
-	// go func() {
-	// 	grpc_server.StartTodo()
-	// }()
+	go func() {
+		grpc_server.StartTodo()
+	}()
 
 	sse_server.Start()
 }
