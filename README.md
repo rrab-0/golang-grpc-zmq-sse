@@ -1,6 +1,5 @@
 # Notes:
 
-- ignore greeter_client/server, it is not used
 - data flows from top to bottom:
     - grpc client (postman/browser)
     - grpc server
@@ -8,3 +7,8 @@
     - zmq sub
     - sse server
     - sse client (postman/browser)
+    
+- ignore these unused folders:
+    - greeter_client
+    - greeter_server
+    - google
