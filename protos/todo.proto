@@ -71,8 +71,8 @@ message ListTodoResponse { repeated Todo activities = 1; }
 
 message DeleteTodoRequest { string id = 1; }
 
-message DeleteTodoResponse {}
+message DeleteTodoResponse { string id = 1; }
 
 message UpdateTodoRequest { Todo activity = 1; }
 
-message UpdateTodoResponse {}
+message UpdateTodoResponse { string id = 1; }

@@ -37,6 +37,46 @@ func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoReque
 	return &pbTodo.CreateTodoResponse{Id: todo.GetId()}, nil
 }
 
+func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*pbTodo.GetTodoResponse, error) {
+	todoId := in.GetId()
+
+	fmt.Println("=======================================")
+	fmt.Println(" ID: " + todoId)
+	fmt.Println("=======================================")
+
+	return &pbTodo.GetTodoResponse{Activity: &pbTodo.Todo{
+		Id: todoId,
+	}}, nil
+}
+
+func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) (*pbTodo.ListTodoResponse, error) {
+	fmt.Println("=======================================")
+	fmt.Println(" List Todo")
+	fmt.Println("=======================================")
+
+	return &pbTodo.ListTodoResponse{}, nil
+}
+
+func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoRequest) (*pbTodo.DeleteTodoResponse, error) {
+	todoId := in.GetId()
+
+	fmt.Println("=======================================")
+	fmt.Println(" Delete Todo")
+	fmt.Println("=======================================")
+
+	return &pbTodo.DeleteTodoResponse{Id: todoId}, nil
+}
+
+func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoRequest) (*pbTodo.UpdateTodoResponse, error) {
+	todoId := in.GetActivity().GetId()
+
+	fmt.Println("=======================================")
+	fmt.Println(" Update Todo")
+	fmt.Println("=======================================")
+
+	return &pbTodo.UpdateTodoResponse{Id: todoId}, nil
+}
+
 func StartTodo() {
 	var (
 		portEnvTodo, _ = strconv.Atoi(os.Getenv("GRPC_TODO_PORT"))
