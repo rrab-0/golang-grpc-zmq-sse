@@ -35,8 +35,8 @@ import (
 )
 
 var (
-	portEnv, err = strconv.Atoi(os.Getenv("GRPC_PORT"))
-	port         = flag.Int("port", portEnv, "The server port")
+	portEnv, _ = strconv.Atoi(os.Getenv("GRPC_PORT"))
+	port       = flag.Int("port", portEnv, "The server port")
 )
 
 // server is used to implement helloworld.GreeterServer.
@@ -47,7 +47,7 @@ type server struct {
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	log.Printf("GRPC Server received: %v", in.GetName())
-	zmq_local.GlobalPublisher.Send("10001 "+in.GetName(), 0)
+	zmq_local.GlobalPublisher.Send("10001 "+in.GetName(), 1)
 	log.Println("ZMQ PUB Sent: " + in.GetName())
 
 	err := db.GlobalConnection.Create(&db.Dump{Message: in.GetName()}).Error

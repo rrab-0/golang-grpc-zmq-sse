@@ -14,6 +14,7 @@ func Publisher() *zmq.Socket {
 	if err != nil {
 		log.Printf("Error: %s\n", err)
 	}
+
 	publisher.Bind("tcp://*:" + os.Getenv("ZMQ_PUB_PORT"))
 	publisher.Bind("ipc://weather.ipc")
 	GlobalPublisher = publisher
