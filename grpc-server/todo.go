@@ -30,7 +30,7 @@ func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoReque
 		"CreatedAt: "+todo.GetCreatedAt().String()+"\n",
 		"CreatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05")+"\n",
 		"UpdatedAt: "+todo.GetUpdatedAt().String()+"\n",
-		"UpdatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05"),
+		"UpdatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05")+"\n",
 	)
 	fmt.Println("=======================================")
 

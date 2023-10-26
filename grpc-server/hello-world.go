@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 
+	zmq "github.com/pebbe/zmq4"
+
 	"grpc-zmq-sse/db"
 	pb "grpc-zmq-sse/generated-proto"
 	zmq_local "grpc-zmq-sse/zmq-local"
@@ -24,7 +26,7 @@ type server struct {
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	log.Printf("GRPC Server received: %v", in.GetName())
-	zmq_local.GlobalPublisher.Send("10001 "+in.GetName(), 1)
+	zmq_local.GlobalPublisher.Send("10001 "+in.GetName(), zmq.DONTWAIT)
 	log.Println("ZMQ PUB Sent: " + in.GetName())
 
 	err := db.GlobalConnection.Create(&db.Dump{Message: in.GetName()}).Error

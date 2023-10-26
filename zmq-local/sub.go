@@ -16,12 +16,17 @@ func Subscriber() *zmq.Socket {
 		log.Printf("Error: %s\n", err)
 	}
 
-	mockSubErr2 := subscriber.Connect("tcp://" + os.Getenv("MOCK_IP2") + ":" + os.Getenv("ZMQ_SUB_PORT"))
+	// err = subscriber.Connect("tcp://localhost:" + os.Getenv("ZMQ_SUB_PORT"))
+	// if err != nil {
+	// 	log.Printf("Error: %s\n", err)
+	// }
+
+	mockSubErr2 := subscriber.Connect("tcp://" + os.Getenv("MOCK_IP2") + ":" + os.Getenv("ZMQ_SUB_PORT2"))
 	if mockSubErr2 != nil {
 		log.Printf("mockSubErr2 Error: %s\n", mockSubErr2)
 	}
 
-	mockSubErr3 := subscriber.Connect("tcp://" + os.Getenv("MOCK_IP3") + ":" + os.Getenv("ZMQ_SUB_PORT"))
+	mockSubErr3 := subscriber.Connect("tcp://" + os.Getenv("MOCK_IP3") + ":" + os.Getenv("ZMQ_SUB_PORT3"))
 	if mockSubErr3 != nil {
 		log.Printf("mockSubErr3 Error: %s\n", mockSubErr3)
 	}
@@ -34,8 +39,7 @@ func Subscriber() *zmq.Socket {
 	// if len(os.Args) > 1 { // can set topic with cli args
 	// 	filter = os.Args[1] + " "
 	// }
-	// subscriber.SetSubscribe("hello2")
-	// subscriber.SetSubscribe("hello3")
+	// subscriber.SetSubscribe(filter)
 
 	return subscriber
 }
