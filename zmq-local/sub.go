@@ -1,8 +1,10 @@
 package zmq_local
 
 import (
+	"encoding/json"
 	"grpc-zmq-sse/db"
 	"log"
+	"strings"
 
 	sse_server "grpc-zmq-sse/sse-server"
 
@@ -39,18 +41,28 @@ func Subscriber() *zmq.Socket {
 			if err != nil {
 				if err.Error() != "resource temporarily unavailable" {
 					log.Printf("ZMQ SUB Error: %s\n", err)
+					continue
 				}
 			}
 
-			if msg != "" {
-				log.Println("ZMQ SUB received: " + msg)
-				err = db.GlobalConnection.Create(&db.Dump{Message: msg}).Error
+			// Remove topic from message
+			if msgs := strings.Fields(msg); len(msgs) > 1 {
+				var jsonMsg interface{}
+				err = json.Unmarshal([]byte(msgs[1]), &jsonMsg)
+				if err != nil {
+					log.Printf("ZMQ SUB Error: %s\n", err)
+					continue
+				}
+
+				log.Println("ZMQ SUB received: " + msgs[1])
+				err = db.GlobalConnection.Create(&db.Dump{Message: msgs[1]}).Error
 				if err != nil {
 					log.Printf("Error: %s\n", err)
+					continue
 				}
-				log.Println("PostgreSQL at sse-handler received: " + msg)
 
-				sse_server.GlobalChannelSSE <- msg
+				log.Println("PostgreSQL at sse-handler received: " + msgs[1])
+				sse_server.GlobalChannelSSE <- msgs[1]
 			}
 		}
 	}()

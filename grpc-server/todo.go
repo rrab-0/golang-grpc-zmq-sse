@@ -30,9 +30,11 @@ func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoReque
 		return nil, err
 	}
 
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+dbTodo.ID.String(), zmq.DONTWAIT)
+	jsonMsg := "{\"id\":\"" + dbTodo.ID.String() + "\"}"
+	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
+		return nil, err
 	}
 
 	return &pbTodo.CreateTodoResponse{Id: dbTodo.ID.String()}, nil
@@ -46,9 +48,17 @@ func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*
 		return nil, err
 	}
 
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+dbTodo.ID.String(), zmq.DONTWAIT)
+	completedString := ""
+	if dbTodo.Completed {
+		completedString = "true"
+	}
+	completedString = "false"
+
+	jsonMsg := "{\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
+	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
+		return nil, err
 	}
 
 	return &pbTodo.GetTodoResponse{Activity: &pbTodo.Todo{
@@ -72,19 +82,34 @@ func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) 
 		return nil, err
 	}
 
-	for _, todo := range dbTodos {
+	var jsonMsg string
+	for idx, todo := range dbTodos {
 		newTodo := &pbTodo.Todo{
 			Id:          todo.ID.String(),
 			Title:       todo.Title,
 			Description: todo.Description,
 			Completed:   todo.Completed,
 		}
+
+		completedString := ""
+		if todo.Completed {
+			completedString = "true"
+		}
+		completedString = "false"
+
+		jsonMsg += "{\"id\":\"" + todo.ID.String() + "\",\"title\":\"" + todo.Title + "\",\"description\":\"" + todo.Description + "\",\"completed\":\"" + completedString + "\"}"
+		if idx < len(dbTodos)-1 { // Add a comma if it's not the last element
+			jsonMsg += ","
+		}
+
 		todosGrpc = append(todosGrpc, newTodo)
 	}
+	jsonMsg = "[" + jsonMsg + "]"
 
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+"list of todos", zmq.DONTWAIT)
+	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
+		return nil, err
 	}
 
 	return &pbTodo.ListTodoResponse{
@@ -100,9 +125,11 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 		return nil, err
 	}
 
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+dbTodo.ID.String(), zmq.DONTWAIT)
+	jsonMsg := "{\"id\":\"" + todoId + "\"}"
+	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
+		return nil, err
 	}
 
 	return &pbTodo.DeleteTodoResponse{Id: todoId}, nil
@@ -112,19 +139,44 @@ func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoReque
 	todo := in.GetActivity()
 	var dbTodo db.Todo
 
-	dbTodo.Title = todo.GetTitle()
-	dbTodo.Description = todo.GetDescription()
-	dbTodo.Completed = todo.GetCompleted()
+	if err := db.GlobalConnection.First(&dbTodo, "id = ?", todo.GetId()).Error; err != nil {
+		return nil, err
+	}
+
+	if todo.GetTitle() != "" {
+		dbTodo.Title = todo.GetTitle()
+	}
+
+	if todo.GetDescription() != "" {
+		dbTodo.Description = todo.GetDescription()
+	}
+
+	completedString := ""
+	if todo.GetCompleted() {
+		completedString = "true"
+	}
+	completedString = "false"
+
+	if completedString != "" {
+		dbTodo.Completed = todo.GetCompleted()
+	}
+
+	// dbTodo.Title = todo.GetTitle()
+	// dbTodo.Description = todo.GetDescription()
+	// dbTodo.Completed = todo.GetCompleted()
+
 	if err := db.GlobalConnection.Where("id = ?", todo.GetId()).Save(&dbTodo).Error; err != nil {
 		return nil, err
 	}
 
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+dbTodo.ID.String(), zmq.DONTWAIT)
+	jsonMsg := "{\"id\":\"" + dbTodo.ID.String() + "\"}"
+	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
+		return nil, err
 	}
 
-	return &pbTodo.UpdateTodoResponse{Id: todo.GetId()}, nil
+	return &pbTodo.UpdateTodoResponse{Id: dbTodo.ID.String()}, nil
 }
 
 func StartTodo() {
