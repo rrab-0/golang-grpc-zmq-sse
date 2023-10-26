@@ -30,7 +30,7 @@ func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoReque
 		return nil, err
 	}
 
-	jsonMsg := "{\"id\":\"" + dbTodo.ID.String() + "\"}"
+	jsonMsg := "{\"status\":\"created\",\"id\":\"" + dbTodo.ID.String() + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
@@ -54,7 +54,7 @@ func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*
 	}
 	completedString = "false"
 
-	jsonMsg := "{\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
+	jsonMsg := "{\"status\":\"get-one-todo\",\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
@@ -91,11 +91,10 @@ func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) 
 			Completed:   todo.Completed,
 		}
 
-		completedString := ""
+		completedString := "false"
 		if todo.Completed {
 			completedString = "true"
 		}
-		completedString = "false"
 
 		jsonMsg += "{\"id\":\"" + todo.ID.String() + "\",\"title\":\"" + todo.Title + "\",\"description\":\"" + todo.Description + "\",\"completed\":\"" + completedString + "\"}"
 		if idx < len(dbTodos)-1 { // Add a comma if it's not the last element
@@ -104,7 +103,7 @@ func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) 
 
 		todosGrpc = append(todosGrpc, newTodo)
 	}
-	jsonMsg = "[" + jsonMsg + "]"
+	jsonMsg = "[{\"status\":\"get-all-todo\"}," + jsonMsg + "]"
 
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
@@ -125,7 +124,7 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 		return nil, err
 	}
 
-	jsonMsg := "{\"id\":\"" + todoId + "\"}"
+	jsonMsg := "{\"status\":\"deleted\",\"id\":\"" + todoId + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
@@ -161,15 +160,11 @@ func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoReque
 		dbTodo.Completed = todo.GetCompleted()
 	}
 
-	// dbTodo.Title = todo.GetTitle()
-	// dbTodo.Description = todo.GetDescription()
-	// dbTodo.Completed = todo.GetCompleted()
-
 	if err := db.GlobalConnection.Where("id = ?", todo.GetId()).Save(&dbTodo).Error; err != nil {
 		return nil, err
 	}
 
-	jsonMsg := "{\"id\":\"" + dbTodo.ID.String() + "\"}"
+	jsonMsg := "{\"status\":\"updated\",\"id\":\"" + dbTodo.ID.String() + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
