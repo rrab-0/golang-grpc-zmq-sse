@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"grpc-zmq-sse/db"
 	pbTodo "grpc-zmq-sse/generated-proto-todo"
 	"log"
 	"net"
@@ -19,20 +20,27 @@ type todoServer struct {
 
 func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoRequest) (*pbTodo.CreateTodoResponse, error) {
 	todo := in.GetActivity()
-	completed := strconv.FormatBool(todo.GetCompleted())
+	// completed := strconv.FormatBool(todo.GetCompleted())
 
-	fmt.Println("=======================================")
-	fmt.Println(
-		" ID: "+todo.GetId()+"\n",
-		"Title: "+todo.GetTitle()+"\n",
-		"Description: "+todo.GetDescription()+"\n",
-		"isCompleted: "+completed+"\n",
-		"CreatedAt: "+todo.GetCreatedAt().String()+"\n",
-		"CreatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05")+"\n",
-		"UpdatedAt: "+todo.GetUpdatedAt().String()+"\n",
-		"UpdatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05")+"\n",
-	)
-	fmt.Println("=======================================")
+	// fmt.Println("=======================================")
+	// fmt.Println(
+	// 	" ID: "+todo.GetId()+"\n",
+	// 	"Title: "+todo.GetTitle()+"\n",
+	// 	"Description: "+todo.GetDescription()+"\n",
+	// 	"isCompleted: "+completed+"\n",
+	// 	"CreatedAt: "+todo.GetCreatedAt().String()+"\n",
+	// 	"CreatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05")+"\n",
+	// 	"UpdatedAt: "+todo.GetUpdatedAt().String()+"\n",
+	// 	"UpdatedAt_formatted: "+todo.GetCreatedAt().AsTime().Format("2006-01-02 15:04:05")+"\n",
+	// )
+	// fmt.Println("=======================================")
+
+	dbTodo := &db.Todo{}
+	dbTodo.Title = todo.GetTitle()
+	dbTodo.Description = todo.GetDescription()
+	if err := db.GlobalConnection.Create(&dbTodo).Error; err != nil {
+		return nil, err
+	}
 
 	return &pbTodo.CreateTodoResponse{Id: todo.GetId()}, nil
 }
@@ -44,18 +52,39 @@ func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*
 	fmt.Println(" ID: " + todoId)
 	fmt.Println("=======================================")
 
+	var dbTodo db.Todo
+	if err := db.GlobalConnection.First(&dbTodo, "id = ?", todoId).Error; err != nil {
+		return nil, err
+	}
+
 	return &pbTodo.GetTodoResponse{Activity: &pbTodo.Todo{
-		Id: todoId,
+		Id:          dbTodo.ID.String(),
+		Title:       dbTodo.Title,
+		Description: dbTodo.Description,
+		Completed:   dbTodo.Completed,
 	}}, nil
 }
 
-func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) (*pbTodo.ListTodoResponse, error) {
-	fmt.Println("=======================================")
-	fmt.Println(" List Todo")
-	fmt.Println("=======================================")
+// func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) (*pbTodo.ListTodoResponse, error) {
+// 	limit := in.GetLimit()
+// 	not_completed := in.GetNotCompleted()
 
-	return &pbTodo.ListTodoResponse{}, nil
-}
+// 	fmt.Println("=======================================")
+// 	fmt.Println(" List Todo")
+// 	fmt.Println("=======================================")
+
+// 	var todos []db.Todo
+// 	if err := db.GlobalConnection.Find(&todos).Error; err != nil {
+// 		return nil, err
+// 	}
+
+// 	return &pbTodo.ListTodoResponse{
+// 		Activities: []*pbTodo.Todo{
+// 			 &pbTodo.Todo{},
+// 			 &pbTodo.Todo{},
+// 		},
+// 	}, nil
+// }
 
 func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoRequest) (*pbTodo.DeleteTodoResponse, error) {
 	todoId := in.GetId()
@@ -64,6 +93,11 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 	fmt.Println(" Delete Todo")
 	fmt.Println(" ID: " + todoId)
 	fmt.Println("=======================================")
+
+	var todo db.Todo
+	if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&todo).Error; err != nil {
+		return nil, err
+	}
 
 	return &pbTodo.DeleteTodoResponse{Id: todoId}, nil
 }

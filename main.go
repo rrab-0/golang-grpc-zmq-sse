@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"log"
-
+	"grpc-zmq-sse/db"
+	grpc_server "grpc-zmq-sse/grpc-server"
+	sse_server "grpc-zmq-sse/sse-server"
 	zmq_local "grpc-zmq-sse/zmq-local"
-
-	zmq "github.com/pebbe/zmq4"
+	"log"
 
 	"github.com/joho/godotenv"
 )
@@ -16,7 +15,7 @@ func main() {
 		panic("ERROR: Could not load .env")
 	}
 
-	// db.Connect()
+	db.Connect()
 
 	pub := zmq_local.Publisher()
 	defer pub.Close()
@@ -24,43 +23,37 @@ func main() {
 	sub := zmq_local.Subscriber()
 	defer sub.Close()
 
-	zmq_local.GlobalSubscriber.SetSubscribe("hello2")
-	zmq_local.GlobalSubscriber.SetSubscribe("hello3")
-	pubMsg := "i am mock1"
-	for {
-		// Publisher
-		_, err := zmq_local.GlobalPublisher.Send("hello1 "+pubMsg, zmq.DONTWAIT)
-		if err != nil {
-			fmt.Printf("ZMQ PUB Error: %s\n", err)
+	// sub always recving msgs
+	go func() {
+		defer close(sse_server.ChannelSSE)
+		for {
+			msg, err := zmq_local.GlobalSubscriber.Recv(1)
+			if err != nil {
+				if err.Error() != "resource temporarily unavailable" {
+					log.Printf("ZMQ SUB Error: %s\n", err)
+				}
+			}
+
+			if msg != "" {
+				log.Println("ZMQ SUB received: " + msg)
+				err = db.GlobalConnection.Create(&db.Dump{Message: msg}).Error
+				if err != nil {
+					log.Printf("Error: %s\n", err)
+				}
+				log.Println("PostgreSQL at sse-handler received: " + msg)
+
+				sse_server.ChannelSSE <- msg
+			}
 		}
-		log.Println("ZMQ PUB Sent: " + pubMsg)
+	}()
 
-		// Sub to mock2
-		msgMock2, err := zmq_local.GlobalSubscriber.Recv(zmq.DONTWAIT)
-		// if err != nil {
-		// 	log.Printf("ZMQ SUB Mock 2 Error: %s\n", err)
-		// }
-		log.Println("ZMQ SUB Mock 2 received: " + msgMock2)
+	go func() {
+		grpc_server.Start()
+	}()
 
-		// Sub to mock3
-		msgMock3, err := zmq_local.GlobalSubscriber.Recv(zmq.DONTWAIT)
-		// if err != nil {
-		// 	log.Printf("ZMQ SUB Mock 3 Error: %s\n", err)
-		// }
-		log.Println("ZMQ SUB Mock 3 received: " + msgMock3)
-	}
+	go func() {
+		grpc_server.StartTodo()
+	}()
 
-	// go func() {
-	// 	grpc_server.Start()
-	// }()
-
-	// go func() {
-	// 	grpc_server.StartTodo()
-	// }()
-
-	// sse_server.Start()
+	sse_server.Start()
 }
-
-// netsh interface portproxy add v4tov4 listenport=5555 listenaddress=172.20.10.7 connectport=5555 connectaddress=172.28.13.233
-// netsh interface portproxy add v4tov4 listenport=5556 listenaddress=172.20.10.7 connectport=5556 connectaddress=172.28.13.233
-// netsh interface portproxy add v4tov4 listenport=5557 listenaddress=172.20.10.7 connectport=5557 connectaddress=172.28.13.233

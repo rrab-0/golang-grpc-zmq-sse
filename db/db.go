@@ -44,7 +44,7 @@ func Connect() {
 
 	log.Println("SUCCESS: Connected to PostgreSQL database.")
 
-	migrationErr := GlobalConnection.AutoMigrate(&Dump{})
+	migrationErr := GlobalConnection.AutoMigrate(&Dump{}, &Todo{})
 	if migrationErr != nil {
 		log.Fatalf("ERROR: Failed to perform database migration: %s\n", err)
 	}

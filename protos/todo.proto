@@ -2,41 +2,19 @@ syntax = "proto3";
 package todo.v1;
 option go_package = "grpc-zmq-sse/generated-proto-todo";
 
-import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
+// import "google/api/annotations.proto";
+// import "google/protobuf/timestamp.proto";
 
 service TodoService {
-  rpc CreateTodo(CreateTodoRequest) returns (CreateTodoResponse) {
-    option (google.api.http) = {
-      post : "/v1/todo"
-      body : "activity"
-    };
-  }
+  rpc CreateTodo(CreateTodoRequest) returns (CreateTodoResponse) {}
 
-  rpc GetTodo(GetTodoRequest) returns (GetTodoResponse) {
-    option (google.api.http) = {
-      get : "/v1/todo/{id}"
-    };
-  }
+  rpc GetTodo(GetTodoRequest) returns (GetTodoResponse) {}
 
-  rpc ListTodo(ListTodoRequest) returns (ListTodoResponse) {
-    option (google.api.http) = {
-      get : "/v1/todo"
-    };
-  }
+  rpc ListTodo(ListTodoRequest) returns (ListTodoResponse) {}
 
-  rpc DeleteTodo(DeleteTodoRequest) returns (DeleteTodoResponse) {
-    option (google.api.http) = {
-      delete : "/v1/todo/{id}"
-    };
-  }
+  rpc DeleteTodo(DeleteTodoRequest) returns (DeleteTodoResponse) {}
 
-  rpc UpdateTodo(UpdateTodoRequest) returns (UpdateTodoResponse) {
-    option (google.api.http) = {
-      put : "/v1/todo"
-      body : "activity"
-    };
-  }
+  rpc UpdateTodo(UpdateTodoRequest) returns (UpdateTodoResponse) {}
 }
 
 message Todo {
@@ -47,11 +25,11 @@ message Todo {
   // @inject_tag: sql:",notnull,default:false"
   bool completed = 4;
 
-  // @inject_tag: sql:"type:timestamptz,default:now()"
-  google.protobuf.Timestamp created_at = 5;
+  // // @inject_tag: sql:"type:timestamptz,default:now()"
+  // google.protobuf.Timestamp created_at = 5;
 
-  // @inject_tag: sql:"type:timestamptz"
-  google.protobuf.Timestamp updated_at = 6;
+  // // @inject_tag: sql:"type:timestamptz"
+  // google.protobuf.Timestamp updated_at = 6;
 }
 
 message CreateTodoRequest { Todo activity = 1; }
