@@ -48,19 +48,6 @@ func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*
 		return nil, err
 	}
 
-	completedString := ""
-	if dbTodo.Completed {
-		completedString = "true"
-	}
-	completedString = "false"
-
-	jsonMsg := "{\"status\":\"get-one-todo\",\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
-	if err != nil {
-		log.Printf("ZMQ PUB Error: %s\n", err)
-		return nil, err
-	}
-
 	return &pbTodo.GetTodoResponse{Activity: &pbTodo.Todo{
 		Id:          dbTodo.ID.String(),
 		Title:       dbTodo.Title,
@@ -79,35 +66,6 @@ func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) 
 	)
 
 	if err := db.GlobalConnection.Limit(int(limit)).Find(&dbTodos, "completed = ?", not_completed).Error; err != nil {
-		return nil, err
-	}
-
-	var jsonMsg string
-	for idx, todo := range dbTodos {
-		newTodo := &pbTodo.Todo{
-			Id:          todo.ID.String(),
-			Title:       todo.Title,
-			Description: todo.Description,
-			Completed:   todo.Completed,
-		}
-
-		completedString := "false"
-		if todo.Completed {
-			completedString = "true"
-		}
-
-		jsonMsg += "{\"id\":\"" + todo.ID.String() + "\",\"title\":\"" + todo.Title + "\",\"description\":\"" + todo.Description + "\",\"completed\":\"" + completedString + "\"}"
-		if idx < len(dbTodos)-1 { // Add a comma if it's not the last element
-			jsonMsg += ","
-		}
-
-		todosGrpc = append(todosGrpc, newTodo)
-	}
-	jsonMsg = "[{\"status\":\"get-all-todo\"}," + jsonMsg + "]"
-
-	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
-	if err != nil {
-		log.Printf("ZMQ PUB Error: %s\n", err)
 		return nil, err
 	}
 
