@@ -1,8 +1,22 @@
 # Example usage of gRPC + ZeroMQ + SSE
 
-## run locally
+## Run locally
 
-1.
+1. Install protoc from https://github.com/protocolbuffers/protobuf/releases/tag/v24.4
+
+2. Put the protoc binary in your PATH
+
+3. Install the protocol compiler plugins for Go
+
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+```
+
+```
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+```
+
+4. Ensure that protoc-gen-go.exe/protoc-gen-go-grpc.exe are in your $GOPATH/bin
 
 ## some notes
 
