@@ -1,4 +1,10 @@
-# notes
+# Example usage of gRPC + ZeroMQ + SSE
+
+## run locally
+
+1.
+
+## some notes
 
 -   this project uses go1.21.0
 -   data flows from top to bottom:
@@ -10,7 +16,7 @@
     -   sse client (postman/browser/etc)
 -   google folder is a dependency for todo.proto
 
-# generate proto
+## generate proto
 
 ```
 $ protoc --go_out=generated-proto-todo --go_opt=paths=source_relative \
@@ -26,7 +32,7 @@ protoc --go_out=../generated-proto-trying --go_opt=paths=source_relative \
 
 -   will generate to generated-proto-todo folder
 
-# how to generate proto from a custom folder to another custom folder
+## how to generate proto from a custom folder to another custom folder
 
 -   with a dir sturcture like this:
 
@@ -63,7 +69,7 @@ protoc -I ./ --go_out=../generated-protos/ --go_opt=paths=source_relative --go-g
     └── hello-world.proto
 ```
 
-# proto dependencies
+## proto dependencies
 
 if we have a proto file that depends on another proto file, we can put the dependencies on the same directory as the proto file that depends on it.
 

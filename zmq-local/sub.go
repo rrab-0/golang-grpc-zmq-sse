@@ -2,10 +2,10 @@ package zmq_local
 
 import (
 	"encoding/json"
-	"grpc-zmq-sse/db"
 	"log"
 	"strings"
 
+	"grpc-zmq-sse/db"
 	sse_server "grpc-zmq-sse/sse-server"
 
 	zmq "github.com/pebbe/zmq4"
@@ -53,12 +53,20 @@ func Subscriber() *zmq.Socket {
 					log.Printf("ZMQ SUB Error: %s\n", err)
 					continue
 				}
-
 				log.Println("ZMQ SUB received: " + msgs[1])
-				err = db.GlobalConnection.Create(&db.Dump{Message: msgs[1]}).Error
-				if err != nil {
-					log.Printf("Error: %s\n", err)
-					continue
+
+				switch {
+				case strings.Contains(msgs[1], `"status":"created"`):
+					// TODO: Create
+					err = db.GlobalConnection.Create(&db.Dump{Message: msgs[1]}).Error
+					if err != nil {
+						log.Printf("Error: %s\n", err)
+						continue
+					}
+				case strings.Contains(msgs[1], `"status":"updated"`):
+					// TODO: Update
+				case strings.Contains(msgs[1], `"status":"deleted"`):
+					// TODO: Delete
 				}
 
 				log.Println("PostgreSQL at sse-handler received: " + msgs[1])

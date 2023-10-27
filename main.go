@@ -16,19 +16,19 @@ func main() {
 
 	db.Connect()
 
-	pub := zmq_local.Publisher()
-	defer pub.Close()
-
-	sub := zmq_local.Subscriber()
-	defer sub.Close()
+	go func() {
+		grpc_server.StartTodo()
+	}()
 
 	go func() {
 		grpc_server.Start()
 	}()
 
-	go func() {
-		grpc_server.StartTodo()
-	}()
+	pub := zmq_local.Publisher()
+	defer pub.Close()
+
+	sub := zmq_local.Subscriber()
+	defer sub.Close()
 
 	sse_server.Start()
 }

@@ -6,7 +6,7 @@ option go_package = "grpc-zmq-sse/generated-proto-todo";
 // import "google/protobuf/timestamp.proto";
 
 service TodoService {
-  rpc CreateTodo(CreateTodoRequest) returns (CreateTodoResponse) {}
+  rpc CreateTodo(CreateTodoRequest) returns (stream CreateTodoResponse) {}
 
   rpc GetTodo(GetTodoRequest) returns (GetTodoResponse) {}
 
@@ -15,6 +15,8 @@ service TodoService {
   rpc DeleteTodo(DeleteTodoRequest) returns (DeleteTodoResponse) {}
 
   rpc UpdateTodo(UpdateTodoRequest) returns (UpdateTodoResponse) {}
+
+  // rpc TestTodo(TestTodoRequest) returns (TestTodoResponse) {}
 }
 
 message Todo {
@@ -32,25 +34,43 @@ message Todo {
   // google.protobuf.Timestamp updated_at = 6;
 }
 
-message CreateTodoRequest { Todo activity = 1; }
+message CreateTodoRequest {
+  Todo activity = 1;
+}
 
-message CreateTodoResponse { string id = 1; }
+message CreateTodoResponse {
+  string id = 1;
+}
 
-message GetTodoRequest { string id = 1; }
+message GetTodoRequest {
+  string id = 1;
+}
 
-message GetTodoResponse { Todo activity = 1; }
+message GetTodoResponse {
+  Todo activity = 1;
+}
 
 message ListTodoRequest {
   int32 limit = 1;
   bool not_completed = 2;
 }
 
-message ListTodoResponse { repeated Todo activities = 1; }
+message ListTodoResponse {
+  repeated Todo activities = 1;
+}
 
-message DeleteTodoRequest { string id = 1; }
+message DeleteTodoRequest {
+  string id = 1;
+}
 
-message DeleteTodoResponse { string id = 1; }
+message DeleteTodoResponse {
+  string id = 1;
+}
 
-message UpdateTodoRequest { Todo activity = 1; }
+message UpdateTodoRequest {
+  Todo activity = 1;
+}
 
-message UpdateTodoResponse { string id = 1; }
+message UpdateTodoResponse {
+  string id = 1;
+}

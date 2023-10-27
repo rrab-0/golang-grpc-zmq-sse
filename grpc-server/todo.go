@@ -11,33 +11,49 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	zmq "github.com/pebbe/zmq4"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type todoServer struct {
 	pbTodo.UnimplementedTodoServiceServer
 }
 
-func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoRequest) (*pbTodo.CreateTodoResponse, error) {
+func (ts *todoServer) CreateTodo(in *pbTodo.CreateTodoRequest, stream pbTodo.TodoService_CreateTodoServer) error {
+	requestTime := time.Now()
 	todo := in.GetActivity()
 	var dbTodo db.Todo
 
 	dbTodo.Title = todo.GetTitle()
 	dbTodo.Description = todo.GetDescription()
 	if err := db.GlobalConnection.Create(&dbTodo).Error; err != nil {
-		return nil, err
+		return err
 	}
 
 	jsonMsg := "{\"status\":\"created\",\"id\":\"" + dbTodo.ID.String() + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
-		return nil, err
+		return err
 	}
 
-	return &pbTodo.CreateTodoResponse{Id: dbTodo.ID.String()}, nil
+	resp := &pbTodo.CreateTodoResponse{Id: dbTodo.ID.String()}
+
+	sendTime := time.Now()
+	if err := stream.Send(resp); err != nil {
+		return err
+	}
+
+	sendElapsed := time.Since(sendTime)
+	log.Printf("Send response took %s", sendElapsed)
+
+	totalElapsed := time.Since(requestTime)
+	log.Printf("Total handler time %s", totalElapsed)
+	return nil
+	// return &pbTodo.CreateTodoResponse{Id: dbTodo.ID.String()}, nil
 }
 
 func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*pbTodo.GetTodoResponse, error) {
@@ -67,6 +83,16 @@ func (ts *todoServer) ListTodo(ctx context.Context, in *pbTodo.ListTodoRequest) 
 
 	if err := db.GlobalConnection.Limit(int(limit)).Find(&dbTodos, "completed = ?", not_completed).Error; err != nil {
 		return nil, err
+	}
+
+	for _, todo := range dbTodos {
+		newTodo := &pbTodo.Todo{
+			Id:          todo.ID.String(),
+			Title:       todo.Title,
+			Description: todo.Description,
+			Completed:   todo.Completed,
+		}
+		todosGrpc = append(todosGrpc, newTodo)
 	}
 
 	return &pbTodo.ListTodoResponse{
@@ -145,7 +171,7 @@ func StartTodo() {
 
 	s := grpc.NewServer()
 	pbTodo.RegisterTodoServiceServer(s, &todoServer{})
-
+	reflection.Register(s)
 	log.Printf("grpc-todo server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("grpc-todo failed to serve: %v", err)

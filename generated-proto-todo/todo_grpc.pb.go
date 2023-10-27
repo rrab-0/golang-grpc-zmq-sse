@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TodoServiceClient interface {
-	CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (*CreateTodoResponse, error)
+	CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (TodoService_CreateTodoClient, error)
 	GetTodo(ctx context.Context, in *GetTodoRequest, opts ...grpc.CallOption) (*GetTodoResponse, error)
 	ListTodo(ctx context.Context, in *ListTodoRequest, opts ...grpc.CallOption) (*ListTodoResponse, error)
 	DeleteTodo(ctx context.Context, in *DeleteTodoRequest, opts ...grpc.CallOption) (*DeleteTodoResponse, error)
@@ -37,13 +37,36 @@ func NewTodoServiceClient(cc grpc.ClientConnInterface) TodoServiceClient {
 	return &todoServiceClient{cc}
 }
 
-func (c *todoServiceClient) CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (*CreateTodoResponse, error) {
-	out := new(CreateTodoResponse)
-	err := c.cc.Invoke(ctx, "/todo.v1.TodoService/CreateTodo", in, out, opts...)
+func (c *todoServiceClient) CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (TodoService_CreateTodoClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TodoService_ServiceDesc.Streams[0], "/todo.v1.TodoService/CreateTodo", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &todoServiceCreateTodoClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TodoService_CreateTodoClient interface {
+	Recv() (*CreateTodoResponse, error)
+	grpc.ClientStream
+}
+
+type todoServiceCreateTodoClient struct {
+	grpc.ClientStream
+}
+
+func (x *todoServiceCreateTodoClient) Recv() (*CreateTodoResponse, error) {
+	m := new(CreateTodoResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *todoServiceClient) GetTodo(ctx context.Context, in *GetTodoRequest, opts ...grpc.CallOption) (*GetTodoResponse, error) {
@@ -86,7 +109,7 @@ func (c *todoServiceClient) UpdateTodo(ctx context.Context, in *UpdateTodoReques
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility
 type TodoServiceServer interface {
-	CreateTodo(context.Context, *CreateTodoRequest) (*CreateTodoResponse, error)
+	CreateTodo(*CreateTodoRequest, TodoService_CreateTodoServer) error
 	GetTodo(context.Context, *GetTodoRequest) (*GetTodoResponse, error)
 	ListTodo(context.Context, *ListTodoRequest) (*ListTodoResponse, error)
 	DeleteTodo(context.Context, *DeleteTodoRequest) (*DeleteTodoResponse, error)
@@ -98,8 +121,8 @@ type TodoServiceServer interface {
 type UnimplementedTodoServiceServer struct {
 }
 
-func (UnimplementedTodoServiceServer) CreateTodo(context.Context, *CreateTodoRequest) (*CreateTodoResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateTodo not implemented")
+func (UnimplementedTodoServiceServer) CreateTodo(*CreateTodoRequest, TodoService_CreateTodoServer) error {
+	return status.Errorf(codes.Unimplemented, "method CreateTodo not implemented")
 }
 func (UnimplementedTodoServiceServer) GetTodo(context.Context, *GetTodoRequest) (*GetTodoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTodo not implemented")
@@ -126,22 +149,25 @@ func RegisterTodoServiceServer(s grpc.ServiceRegistrar, srv TodoServiceServer) {
 	s.RegisterService(&TodoService_ServiceDesc, srv)
 }
 
-func _TodoService_CreateTodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateTodoRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _TodoService_CreateTodo_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CreateTodoRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(TodoServiceServer).CreateTodo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/todo.v1.TodoService/CreateTodo",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TodoServiceServer).CreateTodo(ctx, req.(*CreateTodoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(TodoServiceServer).CreateTodo(m, &todoServiceCreateTodoServer{stream})
+}
+
+type TodoService_CreateTodoServer interface {
+	Send(*CreateTodoResponse) error
+	grpc.ServerStream
+}
+
+type todoServiceCreateTodoServer struct {
+	grpc.ServerStream
+}
+
+func (x *todoServiceCreateTodoServer) Send(m *CreateTodoResponse) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _TodoService_GetTodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -224,10 +250,6 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TodoServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateTodo",
-			Handler:    _TodoService_CreateTodo_Handler,
-		},
-		{
 			MethodName: "GetTodo",
 			Handler:    _TodoService_GetTodo_Handler,
 		},
@@ -244,6 +266,12 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TodoService_UpdateTodo_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "CreateTodo",
+			Handler:       _TodoService_CreateTodo_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "todo.proto",
 }
