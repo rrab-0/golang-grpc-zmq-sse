@@ -41,13 +41,13 @@ $ sudo apt-get update
 $ sudo apt-get install libzmq3-dev
 ```
 
-3. Make sure `libzmq` is installed
+4. Make sure `libzmq` is installed
 
 ```
 $ pkg-config --modversion libzmq
 ```
 
-4. Make sure `CGO_ENABLED` is set to `1` in go env
+5. Make sure `CGO_ENABLED` is set to `1` in go env
 
 ```
 $ go env CGO_ENABLED

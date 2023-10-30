@@ -2,15 +2,12 @@ package grpc_server
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"grpc-zmq-sse/db"
 	pbTodo "grpc-zmq-sse/generated-proto-todo"
 	zmq_local "grpc-zmq-sse/zmq-local"
 	"log"
 	"net"
 	"os"
-	"strconv"
 	"time"
 
 	zmq "github.com/pebbe/zmq4"
@@ -159,12 +156,13 @@ func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoReque
 }
 
 func StartTodo() {
-	var (
-		portEnvTodo, _ = strconv.Atoi(os.Getenv("GRPC_TODO_PORT"))
-		portTodo       = flag.Int("portTodo", portEnvTodo, "The server port")
-	)
+	// var (
+	// 	portEnvTodo, _ = strconv.Atoi(os.Getenv("GRPC_TODO_PORT"))
+	// 	portTodo       = flag.Int("portTodo", portEnvTodo, "The server port")
+	// )
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *portTodo))
+	// lis, err := net.Listen("tcp", fmt.Sprintf(os.Getenv("GRPC_TODO_HOST")+":%d", *portTodo))
+	lis, err := net.Listen("tcp", os.Getenv("GRPC_TODO_HOST")+":"+os.Getenv("GRPC_TODO_PORT"))
 	if err != nil {
 		log.Fatalf("grpc-todo failed to listen: %v", err)
 	}

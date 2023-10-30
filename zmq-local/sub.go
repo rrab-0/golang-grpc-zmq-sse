@@ -21,13 +21,13 @@ func Subscriber() *zmq.Socket {
 		log.Printf("Error: %s\n", err)
 	}
 
-	err = subscriber.Connect("tcp://localhost:" + os.Getenv("ZMQ_SUB_PORT"))
+	err = subscriber.Connect("tcp://" + os.Getenv("ZMQ_SUB_HOST") + ":" + os.Getenv("ZMQ_SUB_PORT"))
 	if err != nil {
 		log.Printf("Error: %s\n", err)
 	}
 
 	GlobalSubscriber = subscriber
-	log.Println("ZMQ Subscriber is up at :" + os.Getenv("ZMQ_SUB_PORT"))
+	log.Println("ZMQ Subscriber is up at " + os.Getenv("ZMQ_SUB_HOST") + ":" + os.Getenv("ZMQ_SUB_PORT"))
 
 	err = subscriber.SetSubscribe(DefaultTopic)
 	if err != nil {

@@ -43,5 +43,5 @@ func Start() {
 		}
 	})
 
-	r.Run(":" + os.Getenv("SSE_SERVER_PORT"))
+	r.Run(os.Getenv("SSE_SERVER_HOST") + ":" + os.Getenv("SSE_SERVER_PORT"))
 }
