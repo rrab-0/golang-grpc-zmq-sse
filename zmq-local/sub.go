@@ -74,12 +74,14 @@ func Subscriber() *zmq.Socket {
 						continue
 					}
 				case strings.Contains(msgNoTopic, `"status":"updated"`):
-					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&dbTodo).Error; err != nil {
+					var woiTodo db.Todo
+					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&woiTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
 				case strings.Contains(msgNoTopic, `"status":"deleted"`):
-					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&dbTodo).Error; err != nil {
+					var woiTodo db.Todo
+					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&woiTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}

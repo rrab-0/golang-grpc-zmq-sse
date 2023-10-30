@@ -109,7 +109,7 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 	completedString = "false"
 
 	// jsonMsg := "{\"status\":\"deleted\",\"id\":\"" + todoId + "\"}"
-	jsonMsg := "{\"status\":\"deleted\",\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
+	jsonMsg := "{\"status\":\"deleted\",\"id\":\"" + todoId + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
@@ -117,7 +117,7 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 	}
 
 	return &pbTodo.DeleteTodoResponse{Activity: &pbTodo.Todo{
-		Id:          dbTodo.ID.String(),
+		Id:          todoId,
 		Title:       dbTodo.Title,
 		Description: dbTodo.Description,
 		Completed:   dbTodo.Completed,
