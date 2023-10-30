@@ -161,7 +161,7 @@ func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoReque
 	completedString = "false"
 
 	// jsonMsg := "{\"status\":\"updated\",\"id\":\"" + dbTodo.ID.String() + "\"}"
-	jsonMsg := "{\"status\":\"deleted\",\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}" + dbTodo.ID.String() + "\"}"
+	jsonMsg := "{\"status\":\"deleted\",\"id\":\"" + dbTodo.ID.String() + "\",\"title\":\"" + dbTodo.Title + "\",\"description\":\"" + dbTodo.Description + "\",\"completed\":\"" + completedString + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
