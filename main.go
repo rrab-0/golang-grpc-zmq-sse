@@ -20,10 +20,6 @@ func main() {
 		grpc_server.StartTodo()
 	}()
 
-	go func() {
-		grpc_server.Start()
-	}()
-
 	pub := zmq_local.Publisher()
 	defer pub.Close()
 
