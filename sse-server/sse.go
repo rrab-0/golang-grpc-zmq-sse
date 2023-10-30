@@ -27,6 +27,7 @@ func Start() {
 		 * If flush isn't called, the event will not be sent until the buffer is filled
 		 * (infinite loading for client when trying to connect to /sse).
 		 */
+		fmt.Fprintf(c.Writer, "data: you are connected\n\n")
 		c.Writer.Flush()
 
 		for {

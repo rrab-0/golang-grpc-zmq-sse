@@ -2,7 +2,7 @@
 
 ## Run locally
 
-### 1. Install protoc
+<!-- ### 1. Install protoc
 
 1. Install protoc from https://github.com/protocolbuffers/protobuf/releases/tag/v24.4
 
@@ -18,7 +18,14 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 ```
 
-4. Ensure that protoc-gen-go.exe/protoc-gen-go-grpc.exe are in your $GOPATH/bin
+4. Ensure that protoc-gen-go.exe/protoc-gen-go-grpc.exe are in your $GOPATH/bin -->
+
+### 1. Install protoc
+
+```
+$ sudo apt install -y protobuf-compiler
+$ protoc --version
+```
 
 ### 2. Install ZeroMQ (only works on WSL)
 
