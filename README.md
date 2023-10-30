@@ -34,41 +34,6 @@ $ sudo apt install pkg-config
 $ pkg-config --version
 ```
 
-<!-- 2. Install `libsodium`, go to https://download.libsodium.org/libsodium/releases/
-
-3. Download the `LATEST.tar.gz`
-
-4. Extract the tar.gz file and cd into the folder
-
-```
-$ tar -xzvf LATEST.tar.gz
-$ cd libsodium-stable
-```
-
-5. Then do this (before doing `./configure` make sure you have a c compiler installed and is in your PATH)
-
-```
-$ sudo apt install gcc
-$ ./configure
-$ make && make check
-$ sudo make install
-``` -->
-
-<!-- 3. Install `libzmq`
-
-```
-echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_9.0/ ./" >> /etc/apt/sources.list
-wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_9.0/Release.key -O- | sudo apt-key add
-apt-get install libzmq3-dev
-```
-
-4. If it says `libzmq3-dev` is not available, do this
-
-```
-$ sudo apt-get update
-$ sudo apt-get install libzmq3-dev
-``` -->
-
 3. Install `libzmq`
 
 ```
