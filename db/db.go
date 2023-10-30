@@ -13,12 +13,6 @@ import (
 
 var GlobalConnection *gorm.DB
 
-type Dump struct {
-	ID        uuid.UUID `json:"id" uri:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Message   string    `json:"message"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 func Connect() {
 	var (
 		DB_HOST     = os.Getenv("DB_HOST")
@@ -44,7 +38,7 @@ func Connect() {
 
 	log.Println("SUCCESS: Connected to PostgreSQL database.")
 
-	migrationErr := GlobalConnection.AutoMigrate(&Dump{}, &Todo{})
+	migrationErr := GlobalConnection.AutoMigrate(&Todo{})
 	if migrationErr != nil {
 		log.Fatalf("ERROR: Failed to perform database migration: %s\n", err)
 	}

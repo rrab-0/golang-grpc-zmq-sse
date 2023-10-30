@@ -8,7 +8,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"time"
 
 	zmq "github.com/pebbe/zmq4"
 	"google.golang.org/grpc"
@@ -19,38 +18,29 @@ type todoServer struct {
 	pbTodo.UnimplementedTodoServiceServer
 }
 
-func (ts *todoServer) CreateTodo(in *pbTodo.CreateTodoRequest, stream pbTodo.TodoService_CreateTodoServer) error {
-	requestTime := time.Now()
+func (ts *todoServer) CreateTodo(ctx context.Context, in *pbTodo.CreateTodoRequest) (*pbTodo.CreateTodoResponse, error) {
 	todo := in.GetActivity()
 	var dbTodo db.Todo
 
 	dbTodo.Title = todo.GetTitle()
 	dbTodo.Description = todo.GetDescription()
 	if err := db.GlobalConnection.Create(&dbTodo).Error; err != nil {
-		return err
+		return nil, err
 	}
 
 	jsonMsg := "{\"status\":\"created\",\"id\":\"" + dbTodo.ID.String() + "\"}"
 	_, err := zmq_local.GlobalPublisher.Send(zmq_local.DefaultTopic+" "+jsonMsg, zmq.DONTWAIT)
 	if err != nil {
 		log.Printf("ZMQ PUB Error: %s\n", err)
-		return err
+		return nil, err
 	}
 
-	resp := &pbTodo.CreateTodoResponse{Id: dbTodo.ID.String()}
-
-	sendTime := time.Now()
-	if err := stream.Send(resp); err != nil {
-		return err
-	}
-
-	sendElapsed := time.Since(sendTime)
-	log.Printf("Send response took %s", sendElapsed)
-
-	totalElapsed := time.Since(requestTime)
-	log.Printf("Total handler time %s", totalElapsed)
-	return nil
-	// return &pbTodo.CreateTodoResponse{Id: dbTodo.ID.String()}, nil
+	return &pbTodo.CreateTodoResponse{Activity: &pbTodo.Todo{
+		Id:          dbTodo.ID.String(),
+		Title:       dbTodo.Title,
+		Description: dbTodo.Description,
+		Completed:   dbTodo.Completed,
+	}}, nil
 }
 
 func (ts *todoServer) GetTodo(ctx context.Context, in *pbTodo.GetTodoRequest) (*pbTodo.GetTodoResponse, error) {
@@ -112,7 +102,12 @@ func (ts *todoServer) DeleteTodo(ctx context.Context, in *pbTodo.DeleteTodoReque
 		return nil, err
 	}
 
-	return &pbTodo.DeleteTodoResponse{Id: todoId}, nil
+	return &pbTodo.DeleteTodoResponse{Activity: &pbTodo.Todo{
+		Id:          dbTodo.ID.String(),
+		Title:       dbTodo.Title,
+		Description: dbTodo.Description,
+		Completed:   dbTodo.Completed,
+	}}, nil
 }
 
 func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoRequest) (*pbTodo.UpdateTodoResponse, error) {
@@ -152,16 +147,15 @@ func (ts *todoServer) UpdateTodo(ctx context.Context, in *pbTodo.UpdateTodoReque
 		return nil, err
 	}
 
-	return &pbTodo.UpdateTodoResponse{Id: dbTodo.ID.String()}, nil
+	return &pbTodo.UpdateTodoResponse{Activity: &pbTodo.Todo{
+		Id:          dbTodo.ID.String(),
+		Title:       dbTodo.Title,
+		Description: dbTodo.Description,
+		Completed:   dbTodo.Completed,
+	}}, nil
 }
 
 func StartTodo() {
-	// var (
-	// 	portEnvTodo, _ = strconv.Atoi(os.Getenv("GRPC_TODO_PORT"))
-	// 	portTodo       = flag.Int("portTodo", portEnvTodo, "The server port")
-	// )
-
-	// lis, err := net.Listen("tcp", fmt.Sprintf(os.Getenv("GRPC_TODO_HOST")+":%d", *portTodo))
 	lis, err := net.Listen("tcp", os.Getenv("GRPC_TODO_HOST")+":"+os.Getenv("GRPC_TODO_PORT"))
 	if err != nil {
 		log.Fatalf("grpc-todo failed to listen: %v", err)

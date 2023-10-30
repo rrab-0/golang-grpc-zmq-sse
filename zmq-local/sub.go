@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"grpc-zmq-sse/db"
 	sse_server "grpc-zmq-sse/sse-server"
 
 	zmq "github.com/pebbe/zmq4"
@@ -54,19 +55,28 @@ func Subscriber() *zmq.Socket {
 				}
 				log.Println("ZMQ SUB received: " + msgs[1])
 
-				// switch {
-				// case strings.Contains(msgs[1], `"status":"created"`):
-				// 	// TODO: Create
-				// 	err = db.GlobalConnection.Create(&db.Dump{Message: msgs[1]}).Error
-				// 	if err != nil {
-				// 		log.Printf("Error: %s\n", err)
-				// 		continue
-				// 	}
-				// case strings.Contains(msgs[1], `"status":"updated"`):
-				// 	// TODO: Update
-				// case strings.Contains(msgs[1], `"status":"deleted"`):
-				// 	// TODO: Delete
-				// }
+				var dbTodo db.Todo
+				_ = json.Unmarshal([]byte(msgs[1]), &dbTodo)
+				todoId := dbTodo.ID
+
+				switch {
+				case strings.Contains(msgs[1], `"status":"created"`):
+					err = db.GlobalConnection.Create(&dbTodo).Error
+					if err != nil {
+						log.Printf("Error: %s\n", err)
+						continue
+					}
+				case strings.Contains(msgs[1], `"status":"updated"`):
+					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&dbTodo).Error; err != nil {
+						log.Printf("Error: %s\n", err)
+						continue
+					}
+				case strings.Contains(msgs[1], `"status":"deleted"`):
+					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&dbTodo).Error; err != nil {
+						log.Printf("Error: %s\n", err)
+						continue
+					}
+				}
 
 				log.Println("PostgreSQL at sse-handler received: " + msgs[1])
 				sse_server.GlobalChannelSSE <- msgs[1]

@@ -6,7 +6,8 @@ option go_package = "grpc-zmq-sse/generated-proto-todo";
 // import "google/protobuf/timestamp.proto";
 
 service TodoService {
-  rpc CreateTodo(CreateTodoRequest) returns (stream CreateTodoResponse) {}
+  // rpc CreateTodo(CreateTodoRequest) returns (stream CreateTodoResponse) {}
+  rpc CreateTodo(CreateTodoRequest) returns (CreateTodoResponse) {}
 
   rpc GetTodo(GetTodoRequest) returns (GetTodoResponse) {}
 
@@ -38,8 +39,12 @@ message CreateTodoRequest {
   Todo activity = 1;
 }
 
+// message CreateTodoResponse {
+//   string id = 1;
+// }
+
 message CreateTodoResponse {
-  string id = 1;
+  Todo activity = 1;
 }
 
 message GetTodoRequest {
@@ -63,14 +68,22 @@ message DeleteTodoRequest {
   string id = 1;
 }
 
+// message DeleteTodoResponse {
+//   string id = 1;
+// }
+
 message DeleteTodoResponse {
-  string id = 1;
+  Todo activity = 1;
 }
 
 message UpdateTodoRequest {
   Todo activity = 1;
 }
 
+// message UpdateTodoResponse {
+//   string id = 1;
+// }
+
 message UpdateTodoResponse {
-  string id = 1;
+  Todo activity = 1;
 }
