@@ -16,7 +16,10 @@ func Publisher() *zmq.Socket {
 		log.Printf("Error: %s\n", err)
 	}
 
-	publisher.Bind("tcp://" + os.Getenv("ZMQ_PUB_HOST") + ":" + os.Getenv("ZMQ_PUB_PORT"))
+	err = publisher.Bind("tcp://" + os.Getenv("ZMQ_PUB_HOST") + ":" + os.Getenv("ZMQ_PUB_PORT"))
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+	}
 	GlobalPublisher = publisher
 
 	log.Println("ZMQ Publisher is up at " + os.Getenv("ZMQ_PUB_HOST") + ":" + os.Getenv("ZMQ_PUB_PORT"))
