@@ -2,6 +2,8 @@
 
 ## Run locally
 
+### 1. Install protoc
+
 1. Install protoc from https://github.com/protocolbuffers/protobuf/releases/tag/v24.4
 
 2. Put the protoc binary in your PATH
@@ -18,6 +20,75 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 4. Ensure that protoc-gen-go.exe/protoc-gen-go-grpc.exe are in your $GOPATH/bin
 
+### 2. Install ZeroMQ (only works on WSL)
+
+1. Install `pkg-config`
+
+```
+$ sudo apt install pkg-config
+```
+
+2. Make sure `pkg-config` is available
+
+```
+$ pkg-config --version
+```
+
+<!-- 2. Install `libsodium`, go to https://download.libsodium.org/libsodium/releases/
+
+3. Download the `LATEST.tar.gz`
+
+4. Extract the tar.gz file and cd into the folder
+
+```
+$ tar -xzvf LATEST.tar.gz
+$ cd libsodium-stable
+```
+
+5. Then do this (before doing `./configure` make sure you have a c compiler installed and is in your PATH)
+
+```
+$ sudo apt install gcc
+$ ./configure
+$ make && make check
+$ sudo make install
+``` -->
+
+<!-- 3. Install `libzmq`
+
+```
+echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_9.0/ ./" >> /etc/apt/sources.list
+wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_9.0/Release.key -O- | sudo apt-key add
+apt-get install libzmq3-dev
+```
+
+4. If it says `libzmq3-dev` is not available, do this
+
+```
+$ sudo apt-get update
+$ sudo apt-get install libzmq3-dev
+``` -->
+
+3. Install `libzmq`
+
+```
+$ sudo apt-get update
+$ sudo apt-get install libzmq3-dev
+```
+
+3. Make sure `libzmq` is installed
+
+```
+$ pkg-config --modversion libzmq
+```
+
+4. Make sure `CGO_ENABLED` is set to `1` in go env
+
+```
+$ go env CGO_ENABLED
+1
+```
+
 ## some notes
 
 -   this project uses go1.21.0
@@ -28,7 +99,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
     -   zmq sub
     -   sse server
     -   sse client (postman/browser/etc)
--   google folder is a dependency for todo.proto
+-   google folder is a dependency for todo.proto that is currently not used
 
 ## generate proto
 
