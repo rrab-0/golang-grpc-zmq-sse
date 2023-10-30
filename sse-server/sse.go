@@ -23,8 +23,10 @@ func Start() {
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Connection", "keep-alive")
 		c.Header("Access-Control-Allow-Origin", "*")
-
-		fmt.Fprintf(c.Writer, "data: you are connected\n\n")
+		/**
+		 * If flush isn't called, the event will not be sent until the buffer is filled
+		 * (infinite loading for client when trying to connect to /sse).
+		 */
 		c.Writer.Flush()
 
 		for {
