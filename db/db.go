@@ -56,3 +56,11 @@ type Todo struct {
 	Description string `json:"description"`
 	Completed   bool   `json:"completed"`
 }
+
+type SubMessage struct {
+	Status      string `json:"status"`
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Completed   string `json:"completed"`
+}
