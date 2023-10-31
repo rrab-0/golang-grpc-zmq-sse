@@ -35,7 +35,6 @@ func Subscriber() *zmq.Socket {
 	}
 
 	go func() {
-		defer close(sse_server.GlobalChannelSSE)
 		for {
 			msg, err := subscriber.Recv(1)
 			if err != nil {
@@ -67,21 +66,19 @@ func Subscriber() *zmq.Socket {
 				dbTodo.Completed = false
 
 				switch {
-				case strings.Contains(msgNoTopic, `"status":"created"`):
+				case jsonMsg.Status == "created":
 					err = db.GlobalConnection.Create(&dbTodo).Error
 					if err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
-				case strings.Contains(msgNoTopic, `"status":"updated"`):
-					var woiTodo db.Todo
-					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&woiTodo).Error; err != nil {
+				case jsonMsg.Status == "updated":
+					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&dbTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
-				case strings.Contains(msgNoTopic, `"status":"deleted"`):
-					var woiTodo db.Todo
-					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&woiTodo).Error; err != nil {
+				case jsonMsg.Status == "deleted":
+					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&dbTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
@@ -90,50 +87,6 @@ func Subscriber() *zmq.Socket {
 				log.Println("PostgreSQL at sse-handler received: " + msgNoTopic)
 				sse_server.GlobalChannelSSE <- msgNoTopic
 			}
-
-			// // Remove topic from message
-			// if msgs := strings.Fields(msg); len(msgs) > 1 {
-			// 	msgResult := strings.TrimPrefix(msg, DefaultTopic)
-			// 	var jsonMsg db.SubMessage
-			// 	err = json.Unmarshal([]byte(msgResult), &jsonMsg)
-			// 	if err != nil {
-			// 		log.Printf("ZMQ SUB Error: %s\n", err)
-			// 		continue
-			// 	}
-			// 	log.Println("ZMQ SUB received: " + msgResult)
-
-			// 	var dbTodo db.Todo
-			// 	todoId := jsonMsg.ID
-			// 	dbTodo.Title = jsonMsg.Title
-			// 	dbTodo.Description = jsonMsg.Description
-
-			// 	if jsonMsg.Completed == "true" {
-			// 		dbTodo.Completed = true
-			// 	}
-			// 	dbTodo.Completed = false
-
-			// 	switch {
-			// 	case strings.Contains(msgs[1], `"status":"created"`):
-			// 		err = db.GlobalConnection.Create(&dbTodo).Error
-			// 		if err != nil {
-			// 			log.Printf("Error: %s\n", err)
-			// 			continue
-			// 		}
-			// 	case strings.Contains(msgs[1], `"status":"updated"`):
-			// 		if err := db.GlobalConnection.Where("id = ?", todoId).Save(&dbTodo).Error; err != nil {
-			// 			log.Printf("Error: %s\n", err)
-			// 			continue
-			// 		}
-			// 	case strings.Contains(msgs[1], `"status":"deleted"`):
-			// 		if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&dbTodo).Error; err != nil {
-			// 			log.Printf("Error: %s\n", err)
-			// 			continue
-			// 		}
-			// 	}
-
-			// 	log.Println("PostgreSQL at sse-handler received: " + msgResult)
-			// 	sse_server.GlobalChannelSSE <- msgResult
-			// }
 		}
 	}()
 

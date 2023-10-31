@@ -24,7 +24,8 @@ func Start() {
 		c.Header("Connection", "keep-alive")
 		c.Header("Access-Control-Allow-Origin", "*")
 		/**
-		 * If flush isn't called, the event will not be sent until the buffer is filled
+		 * If flush isn't called before rcving msgs,
+		 * the event will not be sent until the buffer is filled
 		 * (infinite loading for client when trying to connect to /sse).
 		 */
 		fmt.Fprintf(c.Writer, "data: you are connected\n\n")
@@ -37,9 +38,10 @@ func Start() {
 				fmt.Fprintf(c.Writer, "data: %s\n\n", msgFromSubZMQ)
 				c.Writer.Flush()
 				log.Println("SSE Sent: " + msgFromSubZMQ)
+				continue
 			case <-c.Writer.CloseNotify():
 				log.Println("client disconnected")
-				return
+				continue
 			}
 		}
 	})
