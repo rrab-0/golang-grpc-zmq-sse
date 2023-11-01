@@ -57,10 +57,10 @@ func Subscriber() *zmq.Socket {
 				log.Println("ZMQ SUB received: " + msgNoTopic)
 
 				todoId := jsonMsg.ID
+				todoUUID, _ := uuid.Parse(todoId)
 				switch {
 				case jsonMsg.Status == "created":
 					var dbTodo db.Todo
-					todoUUID, _ := uuid.Parse(todoId)
 					dbTodo.ID = todoUUID
 					dbTodo.Title = jsonMsg.Title
 					dbTodo.Description = jsonMsg.Description
@@ -76,10 +76,16 @@ func Subscriber() *zmq.Socket {
 					}
 				case jsonMsg.Status == "updated":
 					var updatedTodo db.Todo
+					updatedTodo.ID = todoUUID
 					updatedTodo.Title = jsonMsg.Title
 					updatedTodo.Description = jsonMsg.Description
+					if jsonMsg.Completed == "true" {
+						updatedTodo.Completed = true
+					}
+					updatedTodo.Completed = false
 
-					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&updatedTodo).Error; err != nil {
+					if err := db.GlobalConnection.Save(&updatedTodo).Error; err != nil {
+						// if err := db.GlobalConnection.Where("id = ?", todoId).Save(&updatedTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
