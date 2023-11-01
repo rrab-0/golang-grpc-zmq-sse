@@ -40,7 +40,6 @@ func Start() {
 				log.Println("SSE Sent: " + msgFromSubZMQ)
 			case <-c.Writer.CloseNotify():
 				log.Println("client disconnected")
-				continue
 			}
 		}
 	})
