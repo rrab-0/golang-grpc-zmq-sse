@@ -85,7 +85,6 @@ func Subscriber() *zmq.Socket {
 					updatedTodo.Completed = false
 
 					if err := db.GlobalConnection.Save(&updatedTodo).Error; err != nil {
-						// if err := db.GlobalConnection.Where("id = ?", todoId).Save(&updatedTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
