@@ -57,6 +57,14 @@ $ go env CGO_ENABLED
 
 ## generate proto with makefile
 
+1. Put your `proto` file into `protos` folder
+
+2. Run this command
+
+```
+make generate-protos {your_file_name.proto}
+```
+
 ## generate proto manually
 
 ```
