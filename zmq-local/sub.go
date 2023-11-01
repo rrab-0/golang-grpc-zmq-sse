@@ -56,32 +56,36 @@ func Subscriber() *zmq.Socket {
 				}
 				log.Println("ZMQ SUB received: " + msgNoTopic)
 
-				var dbTodo db.Todo
 				todoId := jsonMsg.ID
-				todoUUID, _ := uuid.Parse(todoId)
-				dbTodo.ID = todoUUID
-				dbTodo.Title = jsonMsg.Title
-				dbTodo.Description = jsonMsg.Description
-
-				if jsonMsg.Completed == "true" {
-					dbTodo.Completed = true
-				}
-				dbTodo.Completed = false
-
 				switch {
 				case jsonMsg.Status == "created":
+					var dbTodo db.Todo
+					todoUUID, _ := uuid.Parse(todoId)
+					dbTodo.ID = todoUUID
+					dbTodo.Title = jsonMsg.Title
+					dbTodo.Description = jsonMsg.Description
+					if jsonMsg.Completed == "true" {
+						dbTodo.Completed = true
+					}
+					dbTodo.Completed = false
+
 					err = db.GlobalConnection.Create(&dbTodo).Error
 					if err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
 				case jsonMsg.Status == "updated":
-					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&dbTodo).Error; err != nil {
+					var updatedTodo db.Todo
+					updatedTodo.Title = jsonMsg.Title
+					updatedTodo.Description = jsonMsg.Description
+
+					if err := db.GlobalConnection.Where("id = ?", todoId).Save(&updatedTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
 				case jsonMsg.Status == "deleted":
-					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&dbTodo).Error; err != nil {
+					var deletedTodo db.Todo
+					if err := db.GlobalConnection.Where("id = ?", todoId).Delete(&deletedTodo).Error; err != nil {
 						log.Printf("Error: %s\n", err)
 						continue
 					}
