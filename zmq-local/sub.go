@@ -8,7 +8,6 @@ import (
 	"grpc-zmq-sse/db"
 	sse_server "grpc-zmq-sse/sse-server"
 
-	"github.com/google/uuid"
 	zmq "github.com/pebbe/zmq4"
 
 	"os"
@@ -58,8 +57,6 @@ func Subscriber() *zmq.Socket {
 
 				var dbTodo db.Todo
 				todoId := jsonMsg.ID
-				todoUUID, _ := uuid.Parse(jsonMsg.ID)
-				dbTodo.ID = todoUUID
 				dbTodo.Title = jsonMsg.Title
 				dbTodo.Description = jsonMsg.Description
 

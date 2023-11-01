@@ -38,7 +38,6 @@ func Start() {
 				fmt.Fprintf(c.Writer, "data: %s\n\n", msgFromSubZMQ)
 				c.Writer.Flush()
 				log.Println("SSE Sent: " + msgFromSubZMQ)
-				continue
 			case <-c.Writer.CloseNotify():
 				log.Println("client disconnected")
 				continue

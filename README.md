@@ -2,24 +2,6 @@
 
 ## Run locally
 
-<!-- ### 1. Install protoc
-
-1. Install protoc from https://github.com/protocolbuffers/protobuf/releases/tag/v24.4
-
-2. Put the protoc binary in your PATH
-
-3. Install the protocol compiler plugins for Go
-
-```
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
-```
-
-```
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
-```
-
-4. Ensure that protoc-gen-go.exe/protoc-gen-go-grpc.exe are in your $GOPATH/bin -->
-
 ### 1. Install protoc
 
 ```
@@ -73,7 +55,9 @@ $ go env CGO_ENABLED
     -   sse client (postman/browser/etc)
 -   google folder is a dependency for todo.proto that is currently not used
 
-## generate proto
+## generate proto with makefile
+
+## generate proto manually
 
 ```
 $ protoc --go_out=generated-proto-todo --go_opt=paths=source_relative \
@@ -108,13 +92,13 @@ protoc --go_out=../generated-proto-trying --go_opt=paths=source_relative \
 cd protos
 ```
 
--   then do the command there
+-   then do this
 
 ```
 protoc -I ./ --go_out=../generated-protos/ --go_opt=paths=source_relative --go-grpc_out=../generated-protos/ --go-grpc_opt=paths=source_relative hello-world.proto
 ```
 
--   so that it our folder tree will look like this
+-   so that our folder tree will look like this
 
 ```
 .
