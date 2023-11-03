@@ -2,9 +2,9 @@ package grpc_server
 
 import (
 	"context"
-	"grpc-zmq-sse/db"
-	pbTodo "grpc-zmq-sse/generated-proto-todo"
-	zmq_local "grpc-zmq-sse/zmq-local"
+	"grpc-zmq-sse/app/db"
+	pbTodo "grpc-zmq-sse/app/generated-proto-todo"
+	zmq_local "grpc-zmq-sse/app/zmq-local"
 	"log"
 	"net"
 	"os"

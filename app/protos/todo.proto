@@ -1,6 +1,6 @@
 syntax = "proto3";
 package todo.v1;
-option go_package = "grpc-zmq-sse/generated-proto-todo";
+option go_package = "grpc-zmq-sse/app/generated-proto-todo";
 
 // import "google/api/annotations.proto";
 // import "google/protobuf/timestamp.proto";

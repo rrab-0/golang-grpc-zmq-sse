@@ -9,7 +9,7 @@
       "stopAtEntry": false,
       "externalConsole": true,
       "cwd": "c:/Users/iqbal/Documents/wow/web/go/grpc-zmq-sse",
-      "program": "c:/Users/iqbal/Documents/wow/web/go/grpc-zmq-sse/build/Debug/outDebug",
+      "program": "c:/Users/iqbal/Documents/wow/web/go/grpc-zmq-sse/app/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

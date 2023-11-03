@@ -13,12 +13,12 @@ var DefaultTopic = "default-topic"
 func Publisher() *zmq.Socket {
 	publisher, err := zmq.NewSocket(zmq.PUB)
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Printf("PUB Error: %s\n", err)
 	}
 
 	err = publisher.Bind("tcp://" + os.Getenv("ZMQ_PUB_HOST") + ":" + os.Getenv("ZMQ_PUB_PORT"))
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Printf("PUB Error: %s\n", err)
 	}
 	GlobalPublisher = publisher
 

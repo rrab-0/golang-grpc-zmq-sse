@@ -8,8 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var GlobalChannelSSE = make(chan string, 100)
-
+var GlobalChannelSSE = make(chan string, 2)
 func Start() {
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
@@ -31,7 +30,6 @@ func Start() {
 		fmt.Fprintf(c.Writer, "data: you are connected\n\n")
 		c.Writer.Flush()
 
-		// go func() {
 		for {
 			select {
 			case msgFromSubZMQ := <-GlobalChannelSSE:
@@ -44,7 +42,6 @@ func Start() {
 				return
 			}
 		}
-		// }()
 	})
 
 	r.Run(os.Getenv("SSE_SERVER_HOST") + ":" + os.Getenv("SSE_SERVER_PORT"))
